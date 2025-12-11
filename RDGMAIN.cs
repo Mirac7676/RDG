@@ -118,7 +118,7 @@ namespace RDGMAIN
                     catch
                     {
                         Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
-                                //TEST
+                                // SACHEN DIE FEHLEN: die gänge (.), anstatt for (Z. 48) zwei dimensionale array mit komma drinnen, das in eine methode rein
                     }
                 }
             }
