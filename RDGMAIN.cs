@@ -4,126 +4,130 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RDGMAIN
+namespace RDG
 {
+   
+    class Program
+    {
+                // PhilsVersion
+        static Random zufall = new Random();
+        static char wand = '#';
+        static char gang = '.';
+        static char Start = 'S';
+        static char End = 'E';
+        static char Falle = 'F';
+        static char Schatz = 'T';
 
-            class Program
+        static void Main(string[] args)
         {
-            static void Main(string[] args)
+            int Hoehe = EingabeH();
+            int Laenge = EingabeL();
+
+            Console.Write("-------------------");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("Der Random Dungeon Generator");
+            Console.ResetColor();
+            Console.WriteLine("-------------------");
+            char[,]Karte = Karte_erstellen(Laenge , Hoehe);
+
+            Start_Ende(Karte, Laenge, Hoehe, out int Startx, out int Starty, out int Endx, out int Endy);
+            for (int y = 0; y < Hoehe; y++)
             {
-                int hoehe = EingabeH();     // Eingabe der Höhe
-                int laenge = EingabeL();    // Eingabe der Länge
-
-                Console.Write("-------------------");
-                Console.ForegroundColor = ConsoleColor.Red;                 // Titel "Der Random DUngeon Generator" in Rot :)
-                Console.Write("Der Random Dungeon Generator");
-                Console.ResetColor();
-                Console.WriteLine("-------------------");
-
-                Random rand = new Random();                                       // Für Random Position von S und E
-            int startX, startY, endeX = -1, endeY = -1;
-
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // FÜr den Random Start
-            // Für den Startpunkt
-            do
-            {
-                startX = rand.Next(1, hoehe - 1); // S wird zwischen 1 und hoehe-1 gewählt
-                startY = rand.Next(1, laenge - 1); // S wird zwischen 1 und laenge-1 gewählt
-            } while (startX == endeX && startY == endeY); // Startpunkt darf nicht auf dem Endpunkt liegen
-
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
-            // FÜr das Random Ende
-            do
-            {
-                endeX = rand.Next(1, hoehe - 1); // Ende zwischen 1 und hoehe - 1
-                endeY = rand.Next(1, laenge - 1); // Ende zwischen 1 und laenge - 1
-            } while (endeX == startX && endeY == startY); // Endpunkt wird nicht auf dem Startpunkt liegen
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-            // Dungeon Ausgabe
-            for (int i = 0; i < hoehe; i++)
+                for (int x = 0; x < Laenge; x++)
                 {
-                    Console.Write("    "); // Damit die Wände zentriert sind
-                    for (int j = 0; j < laenge; j++)
+                    char Farbe = Karte[y,x];
+                    if (Farbe == 'S')
                     {
-                        if (i == 0 || i == hoehe - 1 || j == 0 || j == laenge - 1)
-                        {
-                            Console.Write("#"); // Rand
-                        }
-                        else
-                        {
-                            if (i == startX && j == startY)
-                            {
-                                Console.ForegroundColor = ConsoleColor.Green; // S in grün
-                                Console.Write("S");
-                                Console.ResetColor();
-                            }
-                            else if (i == endeX && j == endeY)
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red; // E in rot
-                                Console.Write("E");
-                                Console.ResetColor();
-                            }
-                            else
-                            {
-                                Console.Write("#");
-                            }
-                        }
+                        Console.ForegroundColor = ConsoleColor.Green;
                     }
-                    Console.WriteLine();
+                    else if (Farbe == 'E')
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+                    else
+                    {
+                        Console.ResetColor();
+                    }
+                    Console.Write(Farbe);
+                    Console.ResetColor();
                 }
-
-                Console.ReadKey();
+                Console.WriteLine();
             }
 
-            static int EingabeH()
-            {
-                while (true)
-                {
-                    try
-                    {
-                        Console.Write("Bitte geben Sie die Höhe des RDG an: ");
-                        int hoehe = Convert.ToInt32(Console.ReadLine());                    // Exception Handling für Höphe
+            Console.ReadKey();
+        }
 
-                    if (hoehe >= 10 && hoehe <= 25)
-                            return hoehe;
-                        else
-                            Console.WriteLine("Die Höhe muss zwischen 10 und 25 liegen.");
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
-                    }
+        static int EingabeH()
+        {
+            while (true)
+            {
+                try
+                {
+                    Console.Write("Bitte geben Sie die Höhe des RDG an: ");
+                    int Hoehe = Convert.ToInt32(Console.ReadLine());
+
+                    if (Hoehe >= 10 && Hoehe <= 25)
+                        return Hoehe;
+                    else
+                        Console.WriteLine("Die Höhe muss zwischen 10 und 25 liegen.");
                 }
-            }
-
-            static int EingabeL()
-            {
-                while (true)
+                catch
                 {
-                    try
-                    {
-                        Console.Write("Bitte geben Sie die Länge des RDG an: ");
-                        int laenge = Convert.ToInt32(Console.ReadLine());                   // Exception Handling für Länge
-
-                    if (laenge >= 10 && laenge <= 50)
-                            return laenge;
-                        else
-                            Console.WriteLine("Die Länge muss zwischen 10 und 50 liegen.");
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
-                                // SACHEN DIE FEHLEN: die gänge (.), anstatt for (Z. 48) zwei dimensionale array mit komma drinnen, das in eine methode rein
-                    }
+                    Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
                 }
             }
         }
 
-    }
+        static int EingabeL()
+        {
+            while (true)
+            {
+                try
+                {
+                    Console.Write("Bitte geben Sie die Länge des RDG an: ");
+                    int laenge = Convert.ToInt32(Console.ReadLine());
 
+                    if (laenge >= 10 && laenge <= 50)
+                        return laenge;
+                    else
+                        Console.WriteLine("Die Länge muss zwischen 10 und 50 liegen.");
+                }
+                catch
+                {
+                    Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
+                }
+            }
+        }
+
+        static char[,] Karte_erstellen(int Laenge, int Hoehe)
+        {
+            char[,] Karte = new char[Hoehe, Laenge];
+            for (int y = 0; y < Hoehe; y++)
+            {
+                for (int x = 0; x < Laenge; x++)
+                {
+                    Karte[y, x] = wand;
+
+                }
+            }
+            return Karte;
+        }
+        static void Start_Ende(char[,] Karte, int Laenge, int Hoehe, out int Startx,out int Starty,out int Endx,out int Endy)
+        {
+            int Mindestabstandy = zufall.Next(1, Math.Max(2, Hoehe / 5));
+            int Mindestabstandx = zufall.Next(1, Math.Max(2, Laenge / 5));
+            Starty = zufall.Next(1,Hoehe - 1);
+            Startx = zufall.Next(1,Laenge - 1);
+            Karte[Starty, Startx] = Start;
+          do
+          {
+           Endy = zufall.Next(1, Hoehe - 1);
+           Endx = zufall.Next(1, Laenge - 1);
+          } while (Math.Abs(Endy - Starty) < Mindestabstandy || Math.Abs(Endx - Startx) < Mindestabstandx) ;
+           Karte[Endy, Endx] = End;
+            
+           
+        }
+    }
+}
     
