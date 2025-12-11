@@ -118,6 +118,7 @@ namespace RDGMAIN
                     catch
                     {
                         Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
+                                //TEST
                     }
                 }
             }
