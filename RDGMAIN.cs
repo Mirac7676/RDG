@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
 namespace RDGMAIN
 {
-
-            class Program
+    class Program
+    {
+        static void Main(string[] args)
         {
-            static void Main(string[] args)
-            {
-                        
+
             int hoehe = EingabeH();     // Eingabe der Höhe
             int laenge = EingabeL();    // Eingabe der Länge
 
@@ -34,86 +35,93 @@ namespace RDGMAIN
 
 
 
-        static void ErstelleDungeon(int hoehe, int laenge)      // Methode mit zweidimensionalem Arrai
+        static void ErstelleDungeon(int hoehe, int laenge)
         {
-            char[,] dungeon = new char[hoehe, laenge];          // Zwei Dimensionalen arrai erstellen
-            Random rand = new Random();
+                char[,] dungeon = new char[hoehe, laenge];
+                Random rand = new Random();
 
-            int startX, startY, endeX, endeY;                   // Koordinaten Erstellen als int
+                for (int i = 0; i < hoehe; i++)
+                    for (int j = 0; j < laenge; j++)
+                        dungeon[i, j] = '#';
 
-            // Startpunkt Zufällig Generieren bzw die int einen wert geben
-            startX = rand.Next(1, hoehe - 1);
-            startY = rand.Next(1, laenge - 1);
+                int startX = rand.Next(1, hoehe - 1);
+                int startY = rand.Next(1, laenge - 1);
 
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            // Endpunkt Zufällig Generieren bzw die int einen wert geben
-            do
-            {
-                endeX = rand.Next(1, hoehe - 1);
-                endeY = rand.Next(1, laenge - 1);
-            } while (endeX == startX && endeY == startY);      // Danit Ende niht auf Start gesetzt wird
-
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            // Dungeon füllen
-            for (int i = 0; i < hoehe; i++)
-            {
-                for (int j = 0; j < laenge; j++)
+                int endeX, endeY;
+                do
                 {
-                    dungeon[i, j] = '#';   // einfach überall Wand setzen
-                }
-            }
+                    endeX = rand.Next(1, hoehe - 1);
+                    endeY = rand.Next(1, laenge - 1);
+                } while (endeX == startX && endeY == startY);
 
+                dungeon[startX, startY] = 'S';
+                dungeon[endeX, endeY] = 'E';
 
-            dungeon[startX, startY] = 'S';          // Start und Ende an die Koordinaten Platzieren
-            dungeon[endeX, endeY] = 'E';
+                int x = startX;
+                int y = startY;
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-            // Ausgabe von S und E
-            for (int i = 0; i < hoehe; i++)
-            {
-                Console.Write("    ");
-                for (int j = 0; j < laenge; j++)
+                while (x != endeX || y != endeY)
                 {
-                    if (dungeon[i, j] == 'S')
+                    bool horizontal = rand.Next(2) == 0;
+
+                    if (horizontal)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write('S');
-                        Console.ResetColor();
-                    }
-                    else if (dungeon[i, j] == 'E')
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write('E');
-                        Console.ResetColor();
+                        if (y < endeY) y++;
+                        else if (y > endeY) y--;
                     }
                     else
                     {
-                        Console.Write(dungeon[i, j]);
+                        if (x < endeX) x++;
+                        else if (x > endeX) x--;
                     }
+                    if (!(x == startX && y == startY) && !(x == endeX && y == endeY))
+                        dungeon[x, y] = '.';
                 }
-                Console.WriteLine();
-            }
+
+                for (int i = 0; i < hoehe; i++)
+                {
+                    Console.Write("    ");
+                    for (int j = 0; j < laenge; j++)
+                    {
+                        if (dungeon[i, j] == 'S')
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write("S");
+                            Console.ResetColor();
+                        }
+                        else if (dungeon[i, j] == 'E')
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("E");
+                            Console.ResetColor();
+                        }
+                        else
+                            Console.Write(dungeon[i, j]);
+                    }
+                    Console.WriteLine();
+                }
+            
+
         }
-       
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
         //  Eingaben
-       
+
         static int EingabeH()
         {
             while (true)
             {
                 try
                 {
-                    Console.Write("Bitte geben Sie die Höhe des RDG an: ");
+                    Console.Write("Bitte geben Sie die Höhe (Min. 10, Max 25) des RDG an: ");
                     int hoehe = Convert.ToInt32(Console.ReadLine());
 
                     if (hoehe >= 10 && hoehe <= 25)
@@ -134,7 +142,7 @@ namespace RDGMAIN
             {
                 try
                 {
-                    Console.Write("Bitte geben Sie die Länge des RDG an: ");
+                    Console.Write("Bitte geben Sie die Länge (Min. 10, Max. 50) des RDG an: ");
                     int laenge = Convert.ToInt32(Console.ReadLine());
 
                     if (laenge >= 10 && laenge <= 50)
@@ -150,4 +158,3 @@ namespace RDGMAIN
         }
     }
 }
-
