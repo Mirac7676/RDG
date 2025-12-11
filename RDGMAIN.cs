@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _11._12._25_Projektus
+namespace RDGMAIN
 {
 
             class Program
