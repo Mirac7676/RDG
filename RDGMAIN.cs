@@ -13,17 +13,17 @@ namespace RDGMAIN
         static void Main(string[] args)
         {
 
-            int hoehe = EingabeH();     // Eingabe der Höhe
-            int laenge = EingabeL();    // Eingabe der Länge
+            int hoehe = EingabeH();     // Eingabe der Höhe 
+            int laenge = EingabeL();    // Eingabe der Länge 
 
-            Console.Write("-------------------");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("Der Random Dungeon Generator");
-            Console.ResetColor();
-            Console.WriteLine("-------------------");
+            Console.Write("-------------------"); // Macht Linie als Deko
+            Console.ForegroundColor = ConsoleColor.Red; // Schriftfarbe rot
+            Console.Write("Der Random Dungeon Generator"); // Titel
+            Console.ResetColor(); // Farbe wieder normal
+            Console.WriteLine("-------------------"); // Zweite Linie
 
-            ErstelleDungeon(hoehe, laenge);
-            Console.ReadKey();
+            ErstelleDungeon(hoehe, laenge); // Ruft die Dungeon-Funktion auf, mit Höhe und Länge
+            Console.ReadKey(); 
 
 
 
@@ -37,70 +37,77 @@ namespace RDGMAIN
 
         static void ErstelleDungeon(int hoehe, int laenge)
         {
-                char[,] dungeon = new char[hoehe, laenge];
-                Random rand = new Random();
+            char[,] dungeon = new char[hoehe, laenge]; // 2D. Array für Dungeon
+            Random rand = new Random(); // Random wird erstellt
 
-                for (int i = 0; i < hoehe; i++)
-                    for (int j = 0; j < laenge; j++)
-                        dungeon[i, j] = '#';
+            // Array mit '#' füllen
+            for (int i = 0; i < hoehe; i++)
+                for (int j = 0; j < laenge; j++)
+                    dungeon[i, j] = '#';
 
-                int startX = rand.Next(1, hoehe - 1);
-                int startY = rand.Next(1, laenge - 1);
+            // Startpunkt koordinaten zufällig im Dungeon
+            int startX = rand.Next(1, hoehe - 1);
+            int startY = rand.Next(1, laenge - 1);
 
-                int endeX, endeY;
-                do
+            // Endpunkt auch zufällig, aber nicht gleich wie Start
+            int endeX, endeY;
+            do
+            {
+                endeX = rand.Next(1, hoehe - 1);
+                endeY = rand.Next(1, laenge - 1);
+            } while (endeX == startX && endeY == startY);
+
+            dungeon[startX, startY] = 'S'; // Start mit 'S' markieren
+            dungeon[endeX, endeY] = 'E';   // Ende mit 'E' markieren
+
+            int x = startX; 
+            int y = startY; 
+
+            // Die Linie muss bis zum Ende gehen
+            while (x != endeX || y != endeY)
+            {
+                bool horizontal = rand.Next(2) == 0; // Zufällig ob wir horizontal oder vertikal gehen
+
+                if (horizontal)
                 {
-                    endeX = rand.Next(1, hoehe - 1);
-                    endeY = rand.Next(1, laenge - 1);
-                } while (endeX == startX && endeY == startY);
-
-                dungeon[startX, startY] = 'S';
-                dungeon[endeX, endeY] = 'E';
-
-                int x = startX;
-                int y = startY;
-
-                while (x != endeX || y != endeY)
+                    if (y < endeY) y++; // nach rechts
+                    else if (y > endeY) y--; // nach links
+                }
+                else
                 {
-                    bool horizontal = rand.Next(2) == 0;
+                    if (x < endeX) x++; // runter
+                    else if (x > endeX) x--; // hoch
+                }
 
-                    if (horizontal)
+                // Nur Punkte setzen, wenn nicht Start oder Ende
+                if (!(x == startX && y == startY) && !(x == endeX && y == endeY))
+                    dungeon[x, y] = '.'; // Weg markieren
+            }
+
+            // Dungeon ausgeben
+            for (int i = 0; i < hoehe; i++)
+            {
+                Console.Write("    "); // kleine Einrückung
+                for (int j = 0; j < laenge; j++)
+                {
+                    if (dungeon[i, j] == 'S')
                     {
-                        if (y < endeY) y++;
-                        else if (y > endeY) y--;
+                        Console.ForegroundColor = ConsoleColor.Green; // Start grün
+                        Console.Write("S");
+                        Console.ResetColor();
+                    }
+                    else if (dungeon[i, j] == 'E')
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red; // Ende rot
+                        Console.Write("E");
+                        Console.ResetColor();
                     }
                     else
-                    {
-                        if (x < endeX) x++;
-                        else if (x > endeX) x--;
-                    }
-                    if (!(x == startX && y == startY) && !(x == endeX && y == endeY))
-                        dungeon[x, y] = '.';
+                        Console.Write(dungeon[i, j]); // Rest normal ausgeben
                 }
+                Console.WriteLine(); // neue Zeile
+            }
 
-                for (int i = 0; i < hoehe; i++)
-                {
-                    Console.Write("    ");
-                    for (int j = 0; j < laenge; j++)
-                    {
-                        if (dungeon[i, j] == 'S')
-                        {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.Write("S");
-                            Console.ResetColor();
-                        }
-                        else if (dungeon[i, j] == 'E')
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.Write("E");
-                            Console.ResetColor();
-                        }
-                        else
-                            Console.Write(dungeon[i, j]);
-                    }
-                    Console.WriteLine();
-                }
-            
 
         }
 
@@ -117,28 +124,28 @@ namespace RDGMAIN
 
         static int EingabeH()
         {
-            while (true)
+            while (true) // Dauerschleife bis gültige Eingabe kommt
             {
                 try
                 {
                     Console.Write("Bitte geben Sie die Höhe (Min. 10, Max 25) des RDG an: ");
-                    int hoehe = Convert.ToInt32(Console.ReadLine());
+                    int hoehe = Convert.ToInt32(Console.ReadLine()); // Eingabe lesen und Zahl draus machen
 
-                    if (hoehe >= 10 && hoehe <= 25)
-                        return hoehe;
+                    if (hoehe >= 10 && hoehe <= 25) // Gucken ob Zahl im Bereich
+                        return hoehe; // passt dann zurückgeben
                     else
-                        Console.WriteLine("Die Höhe muss zwischen 10 und 25 liegen.");
+                        Console.WriteLine("Die Höhe muss zwischen 10 und 25 liegen."); // Fehlermeldung
                 }
                 catch
                 {
-                    Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
+                    Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben."); // wenn kein Zahl eingegeben wurde
                 }
             }
         }
 
         static int EingabeL()
         {
-            while (true)
+            while (true) // gleich wie bei Höhe
             {
                 try
                 {
