@@ -9,7 +9,7 @@ namespace RDG
    
     class Program
     {
-                // PhilsVersion
+                
         static Random zufall = new Random();
         static char wand = '#';
         static char gang = '.';
@@ -128,6 +128,7 @@ namespace RDG
             
            
         }
+        Console.Readkey();
     }
 }
     
