@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RDG
+
+
+namespace RDGMAIN
 {
     class Program
     {
-        // Zufallsgenerator für die Erzeugung zufälliger Werte
         static Random zufall = new Random();
 
         // Zeichen für verschiedene Objekte auf der Karte
@@ -21,148 +22,310 @@ namespace RDG
 
         static void Main(string[] args)
         {
-            // Eingabe der Höhe und Länge für die Karte
-            int Hoehe = EingabeH();  // vertikale Höhe der Karte
-            int Laenge = EingabeL(); // horizontale Länge der Karte 
 
-            // Ausgabe des Titels
-            Console.Write("-------------------");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("Der Random Dungeon Generator");
-            Console.ResetColor();
-            Console.WriteLine("-------------------");
+            int hoehe = EingabeH();     // Eingabe der Höhe 
+            int laenge = EingabeL();    // Eingabe der Länge 
 
-            // Erstellen der Karte mit der angegebenen Länge und Höhe
-            char[,] Karte = Karte_erstellen(Laenge, Hoehe);
+            Console.Write("-------------------"); // Macht Linie als Deko
+            Console.ForegroundColor = ConsoleColor.Red; // Schriftfarbe rot
+            Console.Write("Der Random Dungeon Generator"); // Titel
+            Console.ResetColor(); // Farbe wieder normal
+            Console.WriteLine("-------------------"); // Zweite Linie
 
-            // Start- und Endpunkte auf der Karte platzieren
-            Start_Ende(Karte, Laenge, Hoehe, out int Startx, out int Starty, out int Endx, out int Endy);
+            ErstelleDungeon(hoehe, laenge); // Ruft die Dungeon-Funktion auf, mit Höhe und Länge
+            Console.ReadKey();
 
-            // Ausgabe der Karte in der Konsole
-            for (int y = 0; y < Hoehe; y++)
+
+
+        }
+        static void ErstelleDungeon(int hoehe, int laenge)
+        {
+            char[,] dungeon = new char[hoehe, laenge]; // 2D. Array für Dungeon
+            Random rand = new Random(); // Random wird erstellt
+
+            // Array mit '#' füllen
+            for (int i = 0; i < hoehe; i++)
+                for (int j = 0; j < laenge; j++)
+                    dungeon[i, j] = '#';
+
+            // Startpunkt koordinaten zufällig im Dungeon
+            int startX = rand.Next(1, hoehe - 1);
+            int startY = rand.Next(1, laenge - 1);
+
+            // Endpunkt auch zufällig, aber nicht gleich wie Start
+            int endeX, endeY;
+            do
             {
-                for (int x = 0; x < Laenge; x++)
-                {
-                    char Farbe = Karte[y, x]; // Aktuelles Zeichen auf der Karte
+                endeX = rand.Next(1, hoehe - 1);
+                endeY = rand.Next(1, laenge - 1);
+            } while (endeX == startX && endeY == startY);
 
-                    // Setze die Farbe der Konsole je nach Symbol (Start = grün, Ende = rot)
-                    if (Farbe == 'S')
+            dungeon[startX, startY] = 'S'; // Start mit 'S' markieren
+            dungeon[endeX, endeY] = 'E';   // Ende mit 'E' markieren
+
+            int x = startX;
+            int y = startY;
+
+            // Die Linie muss bis zum Ende gehen
+            while (x != endeX || y != endeY)
+            {
+                bool horizontal = rand.Next(2) == 0; // Zufällig ob wir horizontal oder vertikal gehen
+
+                if (horizontal)
+                {
+                    if (y < endeY) y++; // nach rechts
+                    else if (y > endeY) y--; // nach links
+                }
+                else
+                {
+                    if (x < endeX) x++; // runter
+                    else if (x > endeX) x--; // hoch
+                }
+
+                // Nur Punkte setzen, wenn nicht Start oder Ende
+                if (!(x == startX && y == startY) && !(x == endeX && y == endeY))
+                    dungeon[x, y] = '.'; // Weg markieren
+            }
+            int minNebenwege = 7 + (hoehe - 10) * 13 / 15;
+            int maxNebenwege = 14 + (laenge - 10) * 20 / 40;
+
+            // Sicherstellen, dass min <= max
+            int min = Math.Min(minNebenwege, maxNebenwege);
+            int max = Math.Max(minNebenwege, maxNebenwege);
+
+            // Zufällige Anzahl an Nebenwegen bestimmen
+            int anzahlNebenwege = zufall.Next(min, max + 1);
+
+            // Je nach Dungeon-Größe unterschiedliche Nebenweg-Algorithmen nutzen
+            if (hoehe <= 15 && laenge <= 25)
+            {
+                ErzeugeNebenWegeKlein(dungeon, anzahlNebenwege, startX, startY, endeX, endeY, hoehe, laenge);
+            }
+            else
+            {
+                ErzeugeNebenWegeGroß(dungeon, anzahlNebenwege, startX, startY, endeX, endeY, hoehe, laenge);
+            }
+            Schatz_Falle(dungeon, laenge, hoehe);
+
+            // Dungeon ausgeben
+            for (int i = 0; i < hoehe; i++)
+            {
+                Console.Write("    "); // kleine Einrückung
+                for (int j = 0; j < laenge; j++)
+                {
+                    if (dungeon[i, j] == 'S')
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.ForegroundColor = ConsoleColor.Green; // Start grün
+                        Console.Write("S");
+                        Console.ResetColor();
                     }
-                    else if (Farbe == 'E')
+                    else if (dungeon[i, j] == 'E')
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = ConsoleColor.Red; // Ende rot
+                        Console.Write("E");
+                        Console.ResetColor();
+                    }
+                    else if (dungeon[i, j] == 'F')
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkMagenta; // Ende rot
+                        Console.Write("F");
+                        Console.ResetColor();
+                    }
+                    else if (dungeon[i, j] == 'T')
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow; // Ende rot
+                        Console.Write("T");
+                        Console.ResetColor();
                     }
                     else
-                    {
-                        Console.ResetColor(); // Für alle anderen Zeichen die Standardfarbe
-                    }
-
-                    // Zeichen auf der Konsole ausgeben
-                    Console.Write(Farbe);
-                    Console.ResetColor(); // Reset der Farbe nach jeder Ausgabe
+                        Console.Write(dungeon[i, j]); // Rest normal ausgeben
                 }
-                Console.WriteLine(); // Zeilenumbruch nach einer Reihe
+                Console.WriteLine(); // neue Zeile
             }
 
-            // Warten auf eine Tasteneingabe, damit das Programm nicht sofort schließt
-            Console.ReadKey();
-        }
 
-        // Methode zur Eingabe der Höhe der Karte
+        }
+        //  Eingaben
+
         static int EingabeH()
         {
-            while (true)
+            while (true) // Dauerschleife bis gültige Eingabe kommt
             {
                 try
                 {
-                    // Benutzer nach der Höhe der Karte fragen
-                    Console.Write("Bitte geben Sie die Höhe des RDG an: ");
-                    int Hoehe = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("Bitte geben Sie die Höhe (Min. 10, Max 25) des RDG an: ");
+                    int hoehe = Convert.ToInt32(Console.ReadLine()); // Eingabe lesen und Zahl draus machen
 
-                    // Überprüfen, ob die Höhe im gültigen Bereich liegt
-                    if (Hoehe >= 10 && Hoehe <= 25)
-                        return Hoehe; // Gültige Eingabe, Wert zurückgeben
+                    if (hoehe >= 10 && hoehe <= 25) // Gucken ob Zahl im Bereich
+                        return hoehe; // passt dann zurückgeben
                     else
                         Console.WriteLine("Die Höhe muss zwischen 10 und 25 liegen."); // Fehlermeldung
                 }
                 catch
                 {
-                    // Fehlerbehandlung für ungültige Eingaben
-                    Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
+                    Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben."); // wenn kein Zahl eingegeben wurde
                 }
             }
         }
 
-        // Methode zur Eingabe der Länge der Karte
         static int EingabeL()
         {
-            while (true)
+            while (true) // gleich wie bei Höhe
             {
                 try
                 {
-                    // Benutzer nach der Länge der Karte fragen
-                    Console.Write("Bitte geben Sie die Länge des RDG an: ");
+                    Console.Write("Bitte geben Sie die Länge (Min. 10, Max. 50) des RDG an: ");
                     int laenge = Convert.ToInt32(Console.ReadLine());
 
-                    // Überprüfen, ob die Länge im gültigen Bereich liegt
                     if (laenge >= 10 && laenge <= 50)
-                        return laenge; // Gültige Eingabe, Wert zurückgeben
+                        return laenge;
                     else
-                        Console.WriteLine("Die Länge muss zwischen 10 und 50 liegen."); // Fehlermeldung
+                        Console.WriteLine("Die Länge muss zwischen 10 und 50 liegen.");
                 }
                 catch
                 {
-                    // Fehlerbehandlung für ungültige Eingaben
                     Console.WriteLine("Ungültige Eingabe, bitte eine Zahl eingeben.");
                 }
             }
         }
 
-        // Methode zur Erstellung der Karte mit Wänden
-        static char[,] Karte_erstellen(int Laenge, int Hoehe)
+        static void Schatz_Falle(char[,] dungeon, int Laenge, int Hoehe)
         {
-            // Erstellen eines zweidimensionalen Arrays (Karte)
-            char[,] Karte = new char[Hoehe, Laenge];
-
-            // Füllen der Karte mit Wänden ('#')
             for (int y = 0; y < Hoehe; y++)
             {
                 for (int x = 0; x < Laenge; x++)
                 {
-                    Karte[y, x] = wand; // Setze jede Zelle auf eine Wand
+                    if (dungeon[y, x] == gang)
+                    {
+                        int Zahl = zufall.Next(1, 101);
+
+                        if (Zahl <= 5)
+                        {
+                            int Zahl2 = zufall.Next(0, 2);
+                            if (Zahl2 == 0)
+                            {
+                                dungeon[y, x] = Schatz;
+                            }
+                            else
+                            {
+
+                                dungeon[y, x] = Falle;
+                            }
+
+                        }
+
+
+                    }
                 }
             }
-
-            return Karte; // Rückgabe der generierten Karte
         }
 
-        // Methode zur Platzierung des Start- und Endpunkts auf der Karte
-        static void Start_Ende(char[,] Karte, int Laenge, int Hoehe, out int Startx, out int Starty, out int Endx, out int Endy)
+        static void ErzeugeNebenWegeKlein(char[,] karte, int anzahlNebenwege, int startX, int startY, int endX, int endY, int hoehe, int breite)
         {
-            // Mindestabstand zwischen Start- und Endpunkt für ein realistischeres Labyrinth
-            int Mindestabstandy = zufall.Next(1, Math.Max(2, Hoehe / 5));
-            int Mindestabstandx = zufall.Next(1, Math.Max(2, Laenge / 5));
-
-            // Zufällige Positionen für den Startpunkt (S)
-            Starty = zufall.Next(1, Hoehe - 1);
-            Startx = zufall.Next(1, Laenge - 1);
-            Karte[Starty, Startx] = Start; // Setze Startpunkt auf der Karte
-
-            // Platzierung des Endpunkts (E), wobei der Mindestabstand zum Start eingehalten wird
-            do
+            // Schleife für alle Nebenwege
+            for (int i = 0; i < anzahlNebenwege; i++)
             {
-                // Zufällige Positionen für den Endpunkt (E)
-                Endy = zufall.Next(1, Hoehe - 1);
-                Endx = zufall.Next(1, Laenge - 1);
-            } while (Math.Abs(Endy - Starty) < Mindestabstandy || Math.Abs(Endx - Startx) < Mindestabstandx);
+                // Startpunkt des Nebenwegs (immer vom Start ausgehend)
+                int festX = startX;
+                int festY = startY;
 
-            // Endpunkt auf der Karte setzen
-            Karte[Endy, Endx] = End;
+                // Zufällige Länge des Nebenwegs (3–14 Felder)
+                int laenge = zufall.Next(3, 15);
+
+                // Zufällige Richtung: 0=oben, 1=unten, 2=links, 3=rechts
+                int richtung = zufall.Next(0, 4);
+
+                // Nebenweg Schritt für Schritt erzeugen
+                for (int l = 0; l < laenge; l++)
+                {
+                    // Bewegung entsprechend der gewählten Richtung
+                    if (richtung == 0) festY--; // nach oben
+                    if (richtung == 1) festY++; // nach unten
+                    if (richtung == 2) festX--; // nach links
+                    if (richtung == 3) festX++; // nach rechts
+
+                    // Wenn der Weg die Karte verlassen würde → abbrechen
+                    if (festX <= 0 || festX >= breite - 1 || festY <= 0 || festY >= hoehe - 1)
+                    {
+                        break;
+                    }
+
+                    // Wenn das Feld kein Wand ist → überspringen
+                    if (karte[festY, festX] != wand)
+                    {
+                        continue;
+                    }
+
+                    // Feld als Gang setzen
+                    karte[festY, festX] = gang;
+                }
+            }
         }
+        static void ErzeugeNebenWegeGroß(char[,] karte, int anzahlNebenwege, int startX, int startY, int endX, int endY, int hoehe, int breite)
+        {
+            // Schleife für alle Nebenwege
+            for (int i = 0; i < anzahlNebenwege; i++)
+            {
+                int festX, festY;
 
-        // Warten auf eine Tasteneingabe, bevor das Programm beendet wird
-        Console.ReadKey();
+                // Startpunkt des Nebenwegs: zufälliger Gang auf der Karte
+                do
+                {
+                    festX = zufall.Next(1, breite - 1);
+                    festY = zufall.Next(1, hoehe - 1);
+                }
+                while (karte[festY, festX] != gang);
+
+                // Länge des Nebenwegs
+                int laenge = zufall.Next(30, 70);
+
+                // Nebenweg Schritt für Schritt erzeugen
+                for (int l = 0; l < laenge; l++)
+                {
+                    // Zufällige Richtung wählen
+                    int richtung = zufall.Next(0, 4);
+
+                    // Bewegung nur durchführen, wenn innerhalb der Karte
+                    if (richtung == 0 && festY > 1) // oben
+                        festY--;
+                    else if (richtung == 1 && festY < hoehe - 2) // unten
+                        festY++;
+                    else if (richtung == 2 && festX > 1) // links
+                        festX--;
+                    else if (richtung == 3 && festX < breite - 2) // rechts
+                        festX++;
+
+                    // Wenn der Weg die Karte verlassen würde → abbrechen
+                    if (festX <= 0 || festX >= breite - 1 || festY <= 0 || festY >= hoehe - 1)
+                    {
+                        break;
+                    }
+
+                    // Keine Überschreibung von bestehenden Gängen oder dem Endpunkt
+                    if (karte[festY, festX] == gang || (festX == endX && festY == endY))
+                    {
+                        continue;
+                    }
+
+                    // Prüfen, wie viele angrenzende Felder bereits Gänge sind
+                    // → verhindert große offene Flächen oder Schleifen
+                    int angrenzendeGange = 0;
+
+                    if (karte[festY - 1, festX] == gang) angrenzendeGange++;
+                    if (karte[festY + 1, festX] == gang) angrenzendeGange++;
+                    if (karte[festY, festX - 1] == gang) angrenzendeGange++;
+                    if (karte[festY, festX + 1] == gang) angrenzendeGange++;
+
+                    // Wenn mehr als 1 Gang angrenzend ist → kein neuer Weg
+                    if (angrenzendeGange > 1)
+                    {
+                        continue;
+                    }
+
+                    // Feld als Gang markieren
+                    karte[festY, festX] = gang;
+                }
+            }
+        }
     }
 }
