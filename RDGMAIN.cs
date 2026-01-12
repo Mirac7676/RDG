@@ -10,17 +10,16 @@ namespace RDGMAIN
 {
     class Program
     {
-        static Random zufall = new Random();
+        static Random zufall = new Random();  // Zufallszahl für das ganze programm, damit man es überall verwenden kann.
 
-        // Zeichen für verschiedene Objekte auf der Karte
-        static char wand = '#';    // Wand zeichen
-        static char gang = '.';    // Gang zeichen
-        static char Start = 'S';   // Startpunkt zeichen
-        static char End = 'E';     // Endpunkt zeichen
-        static char Falle = 'F';   // Falle zeichen
-        static char Schatz = 'T';  // Schatz zeichen
+        static char wand = '#';     // Variable "wand" für das ganze programm, damit man es überall verwenden kann. Es ist ein einzelnes Zeichen das im ganzen program gleich ist.
+        static char gang = '.';   // Variable "gang" für das ganze programm, damit man es überall verwenden kann. Es ist ein einzelnes Zeichen das im ganzen program gleich ist.
+        static char Start = 'S';   // Variable "Start" für das ganze programm, damit man es überall verwenden kann. Es ist ein einzelnes Zeichen das im ganzen program gleich ist.
+        static char Ende = 'E';     // Variable "End" für das ganze programm, damit man es überall verwenden kann. Es ist ein einzelnes Zeichen das im ganzen program gleich ist.
+        static char Falle = 'F';    // Variable "Falle" für das ganze programm, damit man es überall verwenden kann. Es ist ein einzelnes Zeichen das im ganzen program gleich ist.
+        static char Schatz = 'T';   // Variable "Schatz" für das ganze programm, damit man es überall verwenden kann. Es ist ein einzelnes Zeichen das im ganzen program gleich ist.
 
-        static void Main(string[] args)
+        static void Main(string[] args)   // Main Code
         {
 
             int hoehe = EingabeH();     // Eingabe der Höhe 
@@ -34,58 +33,42 @@ namespace RDGMAIN
 
             ErstelleDungeon(hoehe, laenge); // Ruft die Dungeon-Funktion auf, mit Höhe und Länge
             Console.ReadKey();
-
-
-
         }
+
         static void ErstelleDungeon(int hoehe, int laenge)
         {
-            char[,] dungeon = new char[hoehe, laenge]; // 2D. Array für Dungeon
+            char[,] dungeon = new char[hoehe, laenge]; // 2D-Array → Tabelle / Karte (Ein 2D-Array ist ein Array mit Zeilen UND Spalten)
             Random rand = new Random(); // Random wird erstellt
 
-            // Array mit '#' füllen
+            // Dungeon mit '#' füllen
             for (int i = 0; i < hoehe; i++)
+            {
                 for (int j = 0; j < laenge; j++)
+                {
                     dungeon[i, j] = '#';
+                }
+                    
+            }
+           
 
             // Startpunkt koordinaten zufällig im Dungeon
             int startX = rand.Next(1, hoehe - 1);
             int startY = rand.Next(1, laenge - 1);
 
-            // Endpunkt auch zufällig, aber nicht gleich wie Start
+            // Endpunkt auch zufällig, aber Schleife damit ende nicht bei start landet
             int endeX, endeY;
             do
             {
                 endeX = rand.Next(1, hoehe - 1);
                 endeY = rand.Next(1, laenge - 1);
-            } while (endeX == startX && endeY == startY);
+            } while (endeX == startX && endeY == startY); // Prüft das ende und start nicht den selben punkt haben
 
-            dungeon[startX, startY] = 'S'; // Start mit 'S' markieren
-            dungeon[endeX, endeY] = 'E';   // Ende mit 'E' markieren
+            dungeon[startX, startY] = Start ;
+            dungeon[endeX, endeY] = Ende;   
 
-            int x = startX;
-            int y = startY;
-
-            // Die Linie muss bis zum Ende gehen
-            while (x != endeX || y != endeY)
-            {
-                bool horizontal = rand.Next(2) == 0; // Zufällig ob wir horizontal oder vertikal gehen
-
-                if (horizontal)
-                {
-                    if (y < endeY) y++; // nach rechts
-                    else if (y > endeY) y--; // nach links
-                }
-                else
-                {
-                    if (x < endeX) x++; // runter
-                    else if (x > endeX) x--; // hoch
-                }
-
-                // Nur Punkte setzen, wenn nicht Start oder Ende
-                if (!(x == startX && y == startY) && !(x == endeX && y == endeY))
-                    dungeon[x, y] = '.'; // Weg markieren
-            }
+            Hauptweg(dungeon, startX, startY, endeX, endeY);
+            // Gang
+            
             int minNebenwege = 7 + (hoehe - 10) * 13 / 15;
             int maxNebenwege = 14 + (laenge - 10) * 20 / 40;
 
@@ -133,11 +116,10 @@ namespace RDGMAIN
 
 
         }
-        //  Eingaben
 
         static int EingabeH()
         {
-            while (true) // Dauerschleife bis gültige Eingabe kommt
+            while (true) // While Schleife bis gültige Eingabe kommt
             {
                 try
                 {
@@ -155,7 +137,6 @@ namespace RDGMAIN
                 }
             }
         }
-
         static int EingabeL()
         {
             while (true) // gleich wie bei Höhe
@@ -177,6 +158,34 @@ namespace RDGMAIN
             }
         }
 
+
+
+        static void Hauptweg(char[,] dungeon, int startX, int startY, int endeX, int endeY)
+        {
+            int x = startX;
+            int y = startY;
+
+            // Die Linie muss bis zum Ende gehen
+            while (x != endeX || y != endeY)
+            {
+                bool horizontal = zufall.Next(2) == 0; // Zufällig ob wir horizontal oder vertikal gehen
+
+                if (horizontal)
+                {
+                    if (y < endeY) y++; // nach rechts
+                    else if (y > endeY) y--; // nach links
+                }
+                else
+                {
+                    if (x < endeX) x++; // runter
+                    else if (x > endeX) x--; // hoch
+                }
+
+                // Nur Punkte setzen, wenn nicht Start oder Ende
+                if (!(x == startX && y == startY) && !(x == endeX && y == endeY))
+                    dungeon[x, y] = '.'; // Weg markieren
+            }
+        }
         static void Schatz_Falle(char[,] dungeon, int Laenge, int Hoehe)
         {
             for (int y = 0; y < Hoehe; y++)
@@ -207,7 +216,6 @@ namespace RDGMAIN
                 }
             }
         }
-
         static void ErzeugeNebenWegeKlein(char[,] karte, int anzahlNebenwege, int startX, int startY, int endX, int endY, int hoehe, int breite)
         {
             // Schleife für alle Nebenwege
